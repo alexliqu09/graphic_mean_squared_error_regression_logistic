@@ -1,0 +1,56 @@
+import numpy as np
+import scipy as sc
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import  Axes3D
+from sklearn.datasets import make_regression 
+####################################################################################
+_X,_Y=make_regression(n_samples=200,n_features=2,n_targets=1,tail_strength=0.4,effective_rank=1)
+a=len(_X)
+_x=np.array(_X[:,0])
+_x=np.array([np.ones(a),_x]).T
+x1=_x[:,1]
+#########################################################################################
+B=np.linalg.inv(_x.T@_x)@(_x.T)@_Y
+print("nuestra recta: ",B[0],"+",B[1],"X")
+######################################################################################
+def PreHipotesis(w,z,_x):
+    H1=w+z*x1
+    return H1  
+    
+def func(z):
+    fun=1/(1+np.exp(z))
+    return fun 
+#####################################################################################3
+def error2(w,z):
+    sum=0
+    H1=np.zeros(a)
+    target=np.zeros(a)
+    Logistic=np.zeros(a)
+    for i in range(a):
+        H1[i]=PreHipotesis(w,z,_x[i])
+    for i in range(a):
+        Logistic[i]=func(H1[i])
+        target[i]=func(_Y[i])
+
+    for i in range(a):
+        sum+=(target[i]*np.log10(Logistic[i])+(1-target[i])*np.log10(1-Logistic[i]))**2
+    f=(1/(a))*sum
+    return f    
+    
+######################################################################################   
+B0=np.linspace(-B[0],B[0],a) #particionamos nuestra función en 100 donde esos valores seran utlizados como puntops de nuestra grafica
+B1=np.linspace(-B[1],B[1],a)
+_z=np.zeros((a,a)) ## matriz de ceros
+for ix,x1 in enumerate(B0):
+    for iy,y1 in enumerate(B1):
+        _z[iy,ix]=error2(x1,y1)
+        
+        
+#####################################################################################3        
+plt.contour(B0,B1,_z)
+plt.colorbar()
+fig = plt.figure()
+ax = Axes3D(fig)
+X ,Y = np.meshgrid(B0,B1)
+ax.plot_surface(X,Y,_z,rstride=1,cstride=1,cmap='jet')        
+        
